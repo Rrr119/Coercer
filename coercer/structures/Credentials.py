@@ -11,7 +11,16 @@ class Credentials(object):
     """
 
     def __init__(
-        self, username, password, domain, lmhash, nthash, doKerberos=False, kdcHost=None
+        self,
+        username,
+        password,
+        domain,
+        lmhash,
+        nthash,
+        doKerberos=False,
+        kdcHost=None,
+        aesKey=None,
+        dc_ip=None,
     ):
         super(Credentials, self).__init__()
         self.username = username
@@ -21,6 +30,8 @@ class Credentials(object):
         self.nthash = nthash
         self.doKerberos = doKerberos
         self.kdcHost = kdcHost
+        self.aesKey = aesKey
+        self.dc_ip = dc_ip
 
     def is_anonymous(self):
         """

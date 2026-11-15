@@ -1,0 +1,17 @@
+{
+  "root": "/home/dev/feedback/uid21944",
+  "B": "/home/dev/feedback/uid21944",
+  "sha": "6024441c708e330582ffc8e4eccc80b931807194",
+  "wslDistro": "Ubuntu-26.04",
+  "source": {
+    "owner": "p0dalirius",
+    "repo": "Coercer",
+    "sha": "6024441c708e330582ffc8e4eccc80b931807194"
+  },
+  "fork": {
+    "owner": "Rrr119",
+    "repo": "Coercer",
+    "cloneUrl": "https://github.com/Rrr119/Coercer.git"
+  },
+  "at": "2026-11-15T19:34:42.995Z"
+}

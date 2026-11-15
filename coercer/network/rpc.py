@@ -15,9 +15,11 @@ from coercer.core.Reporter import reporter
 from coercer.structures import EscapeCodes
 
 
-def portmap_discover(target, port=135):
+def portmap_discover(target, port=135, timeout=None):
     stringBinding = r"ncacn_ip_tcp:%s[%d]" % (target, port)
     rpctransport = transport.DCERPCTransportFactory(stringBinding)
+    if timeout is not None:
+        rpctransport.set_connect_timeout(timeout)
     dce = rpctransport.get_dce_rpc()
     dce.connect()
     entries = epm.hept_lookup(None, dce=dce)
@@ -50,8 +52,10 @@ def portmap_discover(target, port=135):
     return endpoints
 
 
-def is_port_open(target, port):
+def is_port_open(target, port, timeout=None):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if timeout is not None:
+        s.settimeout(timeout)
     reporter.print_in_progress(
         "Connecting to %s:%d ... " % (target, port),
         prefix="         ",
@@ -75,9 +79,11 @@ def is_port_open(target, port):
         return True
 
 
-def can_bind_to_interface_on_port(target, port, credentials, uuid, version):
+def can_bind_to_interface_on_port(target, port, credentials, uuid, version, timeout=None):
     ncacn_target = r"ncacn_ip_tcp:%s[%d]" % (target, port)
     rpctransport = transport.DCERPCTransportFactory(ncacn_target)
+    if timeout is not None:
+        rpctransport.set_connect_timeout(timeout)
     dce = rpctransport.get_dce_rpc()
     dce.set_credentials(
         credentials.username,
@@ -85,7 +91,7 @@ def can_bind_to_interface_on_port(target, port, credentials, uuid, version):
         credentials.domain,
         credentials.lmhash,
         credentials.nthash,
-        None,
+        credentials.aesKey,
     )
     dce.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
 

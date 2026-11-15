@@ -1,6 +1,6 @@
 [project]
 name = "coercer"
-version = "2.4.3"
+version = "2.4.4"
 description = "A Python script to automatically coerce a Windows server to authenticate on an arbitrary machine through 15 methods."
 readme = "README.md"
 requires-python = ">=3.7"

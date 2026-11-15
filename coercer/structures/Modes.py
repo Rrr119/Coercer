@@ -15,3 +15,4 @@ class Modes(Enum):
     COERCE = 0x01
     SCAN = 0x02
     FUZZ = 0x03
+    PATHS = 0x04

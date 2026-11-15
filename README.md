@@ -21,10 +21,13 @@ To build a binary for Windows, download the `installer.ps1` script from this rep
     + [x] Calls one by one all the vulnerable RPC functions to coerce the server to authenticate on an arbitrary machine.
     + [x] Random UNC paths generation to avoid caching failed attempts (all modes)
     + [x] Configurable delay between attempts with `--delay`
+    + [x] Configurable connection timeout for RPC/SMB connections with `--timeout`
+    + [x] Lists all the coerce methods with their usable exploit paths (mode [paths](./documentation/Paths-mode.md))
  - Options:
     + [x] Filter by method name with `--filter-method-name`, by protocol name with `--filter-protocol-name` or by pipe name with `--filter-pipe-name` (all modes)
     + [x] Target a single machine `--target` or a list of targets from a file with `--targets-file`
     + [x] Specify IP address OR interface to listen on for incoming authentications. (modes [scan](./documentation/Scan-mode.md) and [fuzz](./documentation/Fuzz-mode.md))
+    + [x] Authenticate with password, NT hashes or Kerberos (`-k`, `--aesKey`, `--dc-ip`)
  - Exporting results
     + [x] Export results in SQLite format (modes [scan](./documentation/Scan-mode.md) and [fuzz](./documentation/Fuzz-mode.md))
     + [x] Export results in JSON format (modes [scan](./documentation/Scan-mode.md) and [fuzz](./documentation/Fuzz-mode.md))
@@ -59,6 +62,13 @@ See the `argcomplete` README for how to enable tab completions.
    + Use [**fuzz** mode](./documentation/Fuzz-mode.md), example:
 
     https://user-images.githubusercontent.com/79218792/204373310-64f90835-b544-4760-b0a3-3071429b3940.mp4
+
+ - You want to **list** the available coerce methods (MS-EFSR, MS-DFSNM, MS-FSRVP, MS-RPRN, MS-EVEN) and the exploit paths they use?
+   + Use [**paths** mode](./documentation/Paths-mode.md), example:
+
+    ```
+    ./Coercer.py paths -I 192.168.1.10
+    ```
 
 ---
 

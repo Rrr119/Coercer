@@ -62,3 +62,10 @@ Credentials:
   --no-pass             Don't ask for password (useful for -k)
   --dc-ip ip address    IP Address of the domain controller. If omitted it will use the domain part (FQDN) specified in the target parameter
 ```
+## Additional options
+
+Since version 2.4.4, this mode also supports:
+
+- `--timeout TIMEOUT`: connection timeout in seconds for RPC/SMB connections (defaults to the impacket default when omitted).
+- `-k` / `--kerberos`: use Kerberos authentication (grabs credentials from the ccache file in `KRB5CCNAME`).
+- `--aesKey "hex key"`: AES key to use for Kerberos authentication (128 or 256 bits), to be combined with `-k`.

@@ -16,7 +16,7 @@ from sectools.network.domains import is_fqdn
 from sectools.network.ip import (expand_cidr, is_ipv4_addr, is_ipv4_cidr,
                                  is_ipv6_addr)
 
-VERSION = "2.4.3"
+VERSION = "2.4.4"
 
 banner = (
     """       ______
@@ -124,6 +124,12 @@ def parseArgs():
         "--dce-ports", default=[], nargs="+", type=int, help="DCERPC ports"
     )
     mode_scan_advanced_config.add_argument(
+        "--timeout",
+        default=None,
+        type=int,
+        help="Connection timeout in seconds for RPC/SMB connections (default: impacket default)",
+    )
+    mode_scan_advanced_config.add_argument(
         "--auth-type",
         default=None,
         type=str,
@@ -201,6 +207,18 @@ def parseArgs():
         action="store",
         metavar="ip address",
         help="IP Address of the domain controller. If omitted it will use the domain part (FQDN) specified in the target parameter",
+    )
+    mode_scan_credentials.add_argument(
+        "-k",
+        "--kerberos",
+        action="store_true",
+        help="Use Kerberos authentication. Grabs credentials from ccache file (KRB5CCNAME) based on target parameters.",
+    )
+    mode_scan_credentials.add_argument(
+        "--aesKey",
+        action="store",
+        metavar="hex key",
+        help="AES key to use for Kerberos Authentication (128 or 256 bits)",
     )
     # Targets source
     mode_scan_targets_source = mode_scan.add_mutually_exclusive_group(required=True)
@@ -315,6 +333,12 @@ def parseArgs():
         "--dce-ports", default=[], nargs="+", type=int, help="DCERPC ports"
     )
     mode_fuzz_advanced_config.add_argument(
+        "--timeout",
+        default=None,
+        type=int,
+        help="Connection timeout in seconds for RPC/SMB connections (default: impacket default)",
+    )
+    mode_fuzz_advanced_config.add_argument(
         "--auth-type",
         default=None,
         type=str,
@@ -392,6 +416,18 @@ def parseArgs():
         action="store",
         metavar="ip address",
         help="IP Address of the domain controller. If omitted it will use the domain part (FQDN) specified in the target parameter",
+    )
+    mode_fuzz_credentials.add_argument(
+        "-k",
+        "--kerberos",
+        action="store_true",
+        help="Use Kerberos authentication. Grabs credentials from ccache file (KRB5CCNAME) based on target parameters.",
+    )
+    mode_fuzz_credentials.add_argument(
+        "--aesKey",
+        action="store",
+        metavar="hex key",
+        help="AES key to use for Kerberos Authentication (128 or 256 bits)",
     )
     # Targets source
     mode_fuzz_targets_source = mode_fuzz.add_mutually_exclusive_group(required=True)
@@ -478,6 +514,12 @@ def parseArgs():
         "--dce-ports", default=[], nargs="+", type=int, help="DCERPC ports"
     )
     mode_coerce_advanced_config.add_argument(
+        "--timeout",
+        default=None,
+        type=int,
+        help="Connection timeout in seconds for RPC/SMB connections (default: impacket default)",
+    )
+    mode_coerce_advanced_config.add_argument(
         "--always-continue",
         default=False,
         action="store_true",
@@ -553,6 +595,18 @@ def parseArgs():
         metavar="ip address",
         help="IP Address of the domain controller. If omitted it will use the domain part (FQDN) specified in the target parameter",
     )
+    mode_coerce_credentials.add_argument(
+        "-k",
+        "--kerberos",
+        action="store_true",
+        help="Use Kerberos authentication. Grabs credentials from ccache file (KRB5CCNAME) based on target parameters.",
+    )
+    mode_coerce_credentials.add_argument(
+        "--aesKey",
+        action="store",
+        metavar="hex key",
+        help="AES key to use for Kerberos Authentication (128 or 256 bits)",
+    )
     # Targets source
     mode_coerce_targets_source = mode_coerce.add_mutually_exclusive_group(required=True)
     mode_coerce_targets_source.add_argument(
@@ -605,6 +659,92 @@ def parseArgs():
     )
 
     # Adding the subparsers to the base parser
+    # Creating the "paths" subparser ==============================================================================================================
+    mode_paths = argparse.ArgumentParser(add_help=False)
+    mode_paths.add_argument(
+        "-v",
+        "--verbose",
+        default=False,
+        action="store_true",
+        help="Verbose mode (default: False)",
+    )
+    mode_paths.add_argument(
+        "--debug",
+        default=False,
+        action="store_true",
+        help="Debug mode (default: False)",
+    )
+    mode_paths.add_argument(
+        "--disable-escape-codes",
+        default=False,
+        action="store_true",
+        help="Disable ANSI escape codes",
+    )
+    # Advanced configuration
+    mode_paths_advanced_config = mode_paths.add_argument_group(
+        "Advanced configuration"
+    )
+    mode_paths_advanced_config.add_argument(
+        "--http-port", default=80, type=int, help="HTTP port (default: 80)"
+    )
+    mode_paths_advanced_config.add_argument(
+        "--smb-port", default=445, type=int, help="SMB port (default: 445)"
+    )
+    mode_paths_advanced_config.add_argument(
+        "--auth-type",
+        default=None,
+        type=str,
+        choices=("smb", "http"),
+        help="Desired authentication type.",
+    )
+    # Filters
+    mode_paths_filters = mode_paths.add_argument_group("Filtering")
+    mode_paths_filters.add_argument(
+        "--filter-method-name",
+        default=[],
+        action="append",
+        type=str,
+        help="Filter by method name",
+    )
+    mode_paths_filters.add_argument(
+        "--filter-protocol-name",
+        default=[],
+        action="append",
+        type=str,
+        help="Filter by protocol name",
+    )
+    mode_paths_filters.add_argument(
+        "--filter-pipe-name",
+        default=[],
+        action="append",
+        type=str,
+        help="Filter by pipe name",
+    )
+    # Listener
+    mode_paths_listener = mode_paths.add_argument_group("Listener")
+    mode_paths_listener.add_argument(
+        "-I",
+        "--ip-address",
+        default=None,
+        help="IP address of the listener used to render the exploit paths.",
+    )
+    mode_paths_listener.add_argument(
+        "--path-ip",
+        default=None,
+        help="IP address to use when generating exploit paths.",
+    )
+    # Logging
+    mode_paths_logging = mode_paths.add_argument_group("Logging")
+    mode_paths_logging.add_argument(
+        "--minimum-log-level", default=0, help="Minimum logging level (integer)."
+    )
+    mode_paths_logging.add_argument(
+        "--log-file",
+        default=None,
+        help="Path for the file to log to (enables logging).",
+    )
+
+    # Adding the subparsers to the base parser
     subparsers = parser.add_subparsers(help="Mode", dest="mode", required=True)
     subparsers.add_parser(
         "scan",
@@ -621,19 +761,24 @@ def parseArgs():
         parents=[mode_fuzz],
         help="Tests every method with a list of exploit paths, and report when an authentication is received.",
     )
+    subparsers.add_parser(
+        "paths",
+        parents=[mode_paths],
+        help="Lists all the available coerce methods with their usable exploit paths.",
+    )
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     options = parser.parse_args()
 
     # Parsing hashes
     lmhash, nthash = "", ""
-    if options.hashes is not None:
+    if getattr(options, "hashes", None) is not None:
         lmhash, nthash = options.hashes.split(":")
     if (
-        options.password == ""
-        and options.username != ""
-        and options.hashes is None
-        and options.no_pass is not True
+        getattr(options, "password", "") == ""
+        and getattr(options, "username", "") != ""
+        and getattr(options, "hashes", None) is None
+        and getattr(options, "no_pass", False) is not True
     ):
         from getpass import getpass
 
@@ -652,6 +797,7 @@ def main():
     from coercer.core.loader import find_and_load_coerce_methods
     from coercer.core.modes.coerce import action_coerce
     from coercer.core.modes.fuzz import action_fuzz
+    from coercer.core.modes.paths import action_paths
     from coercer.core.modes.scan import action_scan
     from coercer.core.Reporter import reporter
     from coercer.network.smb import try_login
@@ -659,6 +805,10 @@ def main():
     from coercer.structures.Credentials import Credentials
 
     available_methods = find_and_load_coerce_methods()
+
+    if options.mode == "paths":
+        action_paths(available_methods, options)
+        sys.exit(0)
 
     if (
         options.smb_port == 445
@@ -720,6 +870,10 @@ def main():
         domain=options.domain,
         lmhash=lmhash,
         nthash=nthash,
+        doKerberos=options.kerberos,
+        kdcHost=options.dc_ip,
+        aesKey=options.aesKey,
+        dc_ip=options.dc_ip,
     )
 
     # Processing actions

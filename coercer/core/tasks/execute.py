@@ -31,6 +31,8 @@ def execute_tasks(
     ports=None,
     named_pipe_of_remote_machine=None,
 ):
+    timeout = getattr(options, "timeout", None)
+
     for transport_name, transport in tasks.items():
         if mode == Modes.FUZZ:
             exploit_paths = generate_exploit_templates()
@@ -50,9 +52,12 @@ def execute_tasks(
             iterable = ports or sorted(transport.keys())
 
             def can_connect_function(target, taskEntry, credentials):
-                return is_port_open(target, taskEntry)
+                return is_port_open(target, taskEntry, timeout=timeout)
 
-            can_bind_function = can_bind_to_interface_on_port
+            def can_bind_function(target, taskEntry, credentials, uuid, version):
+                return can_bind_to_interface_on_port(
+                    target, taskEntry, credentials, uuid, version, timeout=timeout
+                )
 
             def connect_function(dcerpc, target, taskEntry):
                 return dcerpc.connect_ncacn_ip_tcp(target=target, port=taskEntry)
@@ -68,9 +73,14 @@ def execute_tasks(
             )
 
             def can_connect_function(target, taskEntry, credentials):
-                return can_connect_to_pipe(target, taskEntry, credentials)
+                return can_connect_to_pipe(
+                    target, taskEntry, credentials, timeout=timeout
+                )
 
-            can_bind_function = can_bind_to_interface
+            def can_bind_function(target, taskEntry, credentials, uuid, version):
+                return can_bind_to_interface(
+                    target, taskEntry, credentials, uuid, version, timeout=timeout
+                )
 
             def connect_function(dcerpc, target, taskEntry):
                 return dcerpc.connect_ncacn_np(target=target, pipe=taskEntry)
@@ -163,7 +173,9 @@ def execute_tasks(
                                     msprotocol_rpc_instance = msprotocol_class(
                                         path=exploitpath
                                     )
-                                    dcerpc = DCERPCSession(credentials=credentials)
+                                    dcerpc = DCERPCSession(
+                                        credentials=credentials, timeout=timeout
+                                    )
                                     connect_function(dcerpc, target, taskEntry)
 
                                     if dcerpc.session is not None:

@@ -24,7 +24,7 @@ def action_scan(target, available_methods, options, credentials):
     portmap = {}
     if "dcerpc" in options.filter_transport_name:
         if not options.dce_ports:
-            portmap = portmap_discover(target, options.dce_port)
+            portmap = portmap_discover(target, options.dce_port, timeout=getattr(options, "timeout", None))
         else:
             portmap = {}
 

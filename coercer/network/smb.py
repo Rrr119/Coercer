@@ -135,9 +135,9 @@ def list_remote_pipes(target, credentials, share="IPC$", maxdepth=-1):
     return pipes
 
 
-def can_connect_to_pipe(target, pipe, credentials, targetIp=None):
+def can_connect_to_pipe(target, pipe, credentials, targetIp=None, timeout=None):
     """
-    Function can_connect_to_pipe(target, pipe, credentials, targetIp=None)
+    Function can_connect_to_pipe(target, pipe, credentials, targetIp=None, timeout=None)
     """
     ncan_target = r"ncacn_np:%s[%s]" % (target, pipe)
     __rpctransport = transport.DCERPCTransportFactory(ncan_target)
@@ -155,6 +155,8 @@ def can_connect_to_pipe(target, pipe, credentials, targetIp=None):
         __rpctransport.set_kerberos(credentials.doKerberos, kdcHost=credentials.kdcHost)
     if targetIp is not None:
         __rpctransport.setRemoteHost(targetIp)
+    if timeout is not None:
+        __rpctransport.set_connect_timeout(timeout)
 
     dce = __rpctransport.get_dce_rpc()
     # dce.set_auth_type(RPC_C_AUTHN_WINNT)
@@ -178,9 +180,11 @@ def can_connect_to_pipe(target, pipe, credentials, targetIp=None):
         return dce
 
 
-def can_bind_to_interface(target, pipe, credentials, uuid, version, targetIp=None):
+def can_bind_to_interface(
+    target, pipe, credentials, uuid, version, targetIp=None, timeout=None
+):
     """
-    Function can_bind_to_interface(target, pipe, credentials, uuid, version, targetIp=None)
+    Function can_bind_to_interface(target, pipe, credentials, uuid, version, targetIp=None, timeout=None)
     """
     ncan_target = r"ncacn_np:%s[%s]" % (target, pipe)
     __rpctransport = transport.DCERPCTransportFactory(ncan_target)
@@ -198,6 +202,8 @@ def can_bind_to_interface(target, pipe, credentials, uuid, version, targetIp=Non
         __rpctransport.set_kerberos(credentials.doKerberos, kdcHost=credentials.kdcHost)
     if targetIp is not None:
         __rpctransport.setRemoteHost(targetIp)
+    if timeout is not None:
+        __rpctransport.set_connect_timeout(timeout)
 
     dce = __rpctransport.get_dce_rpc()
     # dce.set_auth_type(RPC_C_AUTHN_WINNT)

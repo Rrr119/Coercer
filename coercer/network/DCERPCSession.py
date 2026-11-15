@@ -22,15 +22,26 @@ class DCERPCSession(object):
     session = None
     target = None
 
-    def __init__(self, credentials, verbose=False):
+    def __init__(self, credentials, timeout=None, verbose=False):
         super(DCERPCSession, self).__init__()
         self.__verbose = True
         self.credentials = credentials
+        self.timeout = timeout
 
     def connect_ncacn_ip_tcp(self, target, port, targetIp=None):
         self.target = target
         ncacn_ip_tcp = r"ncacn_ip_tcp:%s[%d]" % (target, port)
         self.__rpctransport = transport.DCERPCTransportFactory(ncacn_ip_tcp)
+
+        if self.credentials.doKerberos:
+            self.__rpctransport.set_kerberos(
+                self.credentials.doKerberos, kdcHost=self.credentials.kdcHost
+            )
+        if targetIp is not None:
+            self.__rpctransport.setRemoteHost(targetIp)
+        if self.timeout is not None:
+            self.__rpctransport.set_connect_timeout(self.timeout)
+
         self.session = self.__rpctransport.get_dce_rpc()
         self.session.set_credentials(
             self.credentials.username,
@@ -38,7 +49,7 @@ class DCERPCSession(object):
             self.credentials.domain,
             self.credentials.lmhash,
             self.credentials.nthash,
-            None,
+            self.credentials.aesKey,
         )
         self.session.set_auth_level(RPC_C_AUTHN_LEVEL_PKT_PRIVACY)
 
@@ -80,6 +91,8 @@ class DCERPCSession(object):
             )
         if targetIp is not None:
             self.__rpctransport.setRemoteHost(targetIp)
+        if self.timeout is not None:
+            self.__rpctransport.set_connect_timeout(self.timeout)
 
         self.session = self.__rpctransport.get_dce_rpc()
         self.session.set_auth_type(RPC_C_AUTHN_WINNT)
